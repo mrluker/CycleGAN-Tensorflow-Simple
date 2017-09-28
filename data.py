@@ -3,8 +3,8 @@ from __future__ import absolute_import, division, print_function
 import tensorflow as tf
 
 
-def image_batch(image_paths, batch_size, load_size=286, crop_size=256, channels=3, shuffle=True,
-                num_threads=4, min_after_dequeue=100, allow_smaller_final_batch=False):
+def image_batch(image_paths, batch_size=1, load_size=400, crop_size=256, channels=3, shuffle=True,
+                num_threads=4, min_after_dequeue=400, allow_smaller_final_batch=False):
     """ for jpg and png files """
     # queue and reader
     img_queue = tf.train.string_input_producer(image_paths, shuffle=shuffle)
@@ -18,9 +18,12 @@ def image_batch(image_paths, batch_size, load_size=286, crop_size=256, channels=
     because tf.image.decode_image reutrns a tensor without shape which makes
     tf.image.resize_images collapse. Maybe it's a bug!
     '''
+
     img = tf.image.random_flip_left_right(img)
-    img = tf.image.resize_images(img, [load_size, load_size])
+    img = tf.image.resize_images(img, [load_size, load_size], ResizeMethod.NEAREST_NEIGHBOR)
+    '''
     img = tf.random_crop(img, [crop_size, crop_size, channels])
+    '''
     img = tf.cast(img, tf.float32) / 127.5 - 1
 
     # batch
